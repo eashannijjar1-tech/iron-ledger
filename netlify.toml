@@ -1,2 +1,9 @@
 [build]
   publish = "."
+
+# Always revalidate HTML and app code so new deploys show up immediately
+# (no more stale cached versions on phones).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

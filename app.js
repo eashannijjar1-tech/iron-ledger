@@ -510,10 +510,10 @@ const actions={
     w.entries.forEach(e=>{e.sets=e.sets.filter(s=>s.done||s.w||s.r);});
     w.entries=w.entries.filter(e=>e.sets.length||e.skipped);
     w.status="completed";touchWorkout(w.id);ui.tab="log";render();toast(anyDone?"Session logged ✓":"Session saved");},
-  discard(el){confirmModal("Discard this session?","Nothing will be saved.",()=>{const w=state.workouts[el.dataset.id];w.deleted=true;touchWorkout(w.id);render();});},
+  discard(el){confirmModal("Discard this session?","Nothing will be saved.",()=>{const w=state.workouts[el.dataset.id];if(!w)return;w.deleted=true;touchWorkout(w.id);render();toast("Session discarded");});},
   openHist(el){ui.tab="history";ui.histOpen=el.dataset.id;render();},
   closeHist(){ui.histOpen=null;render();},
-  delWorkout(el){confirmModal("Delete this session?","This removes it from your history and charts.",()=>{const w=state.workouts[el.dataset.id];w.deleted=true;touchWorkout(w.id);ui.histOpen=null;render();});},
+  delWorkout(el){confirmModal("Delete this session?","This removes it from your history and charts.",()=>{const w=state.workouts[el.dataset.id];if(!w)return;w.deleted=true;touchWorkout(w.id);ui.histOpen=null;render();toast("Session deleted");});},
   planWorkout(){openPlan();},
   selEx(el){ui.exSel=el.dataset.id;render();},
   metric(el){ui.metric=el.dataset.m;render();},
@@ -549,8 +549,8 @@ document.getElementById("app").addEventListener("change",e=>{
 document.getElementById("app").addEventListener("focusout",()=>{if(window._pendRender){window._pendRender=0;setTimeout(()=>{render();},50);}});
 
 /* ---------- modals ---------- */
-function confirmModal(title,body,onYes){openModal(`<h2>${esc(title)}</h2><p class="muted">${esc(body)}</p><div class="row" style="margin-top:16px"><button class="btn ghost grow" data-x="no">Cancel</button><button class="btn primary grow" data-x="yes" style="background:var(--down);color:#fff">Yes</button></div>`);
-  document.getElementById("sheet").onclick=ev=>{const t=ev.target.closest("[data-x]");if(!t)return;if(t.dataset.x==="yes")onYes();closeModal();};}
+function confirmModal(title,body,onYes){openModal(`<h2>${esc(title)}</h2><p class="muted">${esc(body)}</p><div class="row" style="margin-top:16px"><button type="button" class="btn ghost grow" data-x="no">Cancel</button><button type="button" class="btn primary grow" data-x="yes" style="background:var(--down);color:#fff">Yes</button></div>`);
+  document.getElementById("sheet").onclick=ev=>{const t=ev.target.closest("[data-x]");if(!t)return;ev.preventDefault();const go=t.dataset.x==="yes";closeModal();if(go){try{onYes();}catch(err){console.error("confirm action failed",err);toast("Something went wrong — try again");}}};}
 const val=id=>{const e=document.getElementById(id);return e?e.value.trim():"";};
 
 function openExPicker(wid,forTpl){
